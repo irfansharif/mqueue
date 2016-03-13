@@ -4,17 +4,13 @@ Lightweight wrapper built around [POSIX message queues](http://man7.org/linux/ma
 
 Highlighted features:
 
-* POSIX mqueues are reference counted, any queue marked for
-deletion is removed only after it is closed by all processes currently
-using it
-* POSIX messages have an associated priority, and messages are always strictly queued (and thus received) in priority order
-* POSIX message queues provide a feature that allows a process to be asynchronously
-notified when a message is available on a queue
-* Each POSIX message queue has an associated set of attributes. Some of these
-attributes can be set when the queue is created or opened
+* POSIX messages have associated priorities, messages are always strictly queued (and received) in priority order
+* POSIX message queues have associated sets of attributes that can be set when the queue is created or opened
 * Allows a process to register for message notification
 from a queue. After registering, the process is notified of the availability of a message
 by delivery of a signal or by the invocation of a function in a separate thread
+* Ridiculously fast, everything is delegated to the kernel
+*
 
 **NOTE:** At the time of writing there already existed a [wrapper](https://github.com/Sirupsen/posix-mqueue) around POSIX message queues but didn't offer some of the notification subscription functionality I needed for IPC, while I could've opted to add that into the original (you'll notice a lot of overlap), I wanted to experiment with C extensions in ruby for some other libraries I'm going to be working on in the future, messaging queues was a subject I was sufficiently versed it to start with.
 
@@ -39,7 +35,9 @@ Or install it yourself as:
 ```ruby
 require 'mqueue'
 
-# Queue names cannot contain '/', shown below are the default settings provided by the Kernel, check below for options available for flags and how to change default settings outside ruby
+# Queue names cannot contain '/', shown below are the default settings provided
+# by the Kernel, check below for options available for flags and how to change
+# default settings outside ruby
 queue = MQueue.new("queue_name", capacity: 10, max_msgsize: 8192, flag: :create)
 queue.send "message"
 
@@ -50,7 +48,7 @@ fork { queue.send "another one" }
 
 # Blocks on empty queues, in this case until forked process adds message onto queue
 queue.recieve
-# => "message"
+# => "another one"
 
 10.times do
   queue.send "42"
@@ -59,7 +57,8 @@ end
 queue.size
 # => 10
 
-# Timed send takes an optional parameter indicating duration it would wait (in seconds) before throwing a MQueue::QueueFull error, defaults to 0
+# Timed send takes an optional parameter indicating duration it would wait
+# (in seconds) before throwing a MQueue::QueueFull error, defaults to 0
 assert_raises MQueue::QueueFull do
   queue.timedsend "queue full, this will fail", 0
 end
@@ -73,7 +72,8 @@ queue.full?
 # Empties queue of all messages, includes pending messages
 queue.flush
 
-# Timed receive takes an optional parameter indicating duration it would wait (in seconds) before throwing a MQueue::QueueEmpty error, defaults to 0
+# Timed receive takes an optional parameter indicating duration it would wait
+# (in seconds) before throwing a MQueue::QueueEmpty error, defaults to 0
 assert_raises MQueue::QueueEmpty do
   queue.timedreceive "queue empty, this will fail too", 0
 end
@@ -81,7 +81,10 @@ end
 queue.empty?
 # => true
 
-# Notification as defined here is when a message is added to previously empty queue, will not get triggered if someone else is waiting on `receive` or messages added to non-empty queues. is triggered asynchronously, only one process will be able to add the notification hook to a particular queue
+# Notification as defined here is when a message is added to previously empty
+# queue, will not get triggered if someone else is waiting on `receive` or
+# messages added to non-empty queues. is triggered asynchronously, only one
+# process will be able to add the notification hook to a particular queue
 queue.on_notification do |msg|
   puts "#{msg} delivered through notification hook"
 end
