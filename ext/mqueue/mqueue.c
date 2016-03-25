@@ -18,3 +18,59 @@ alloc_mqueue(VALUE klass) {
 
   return object;
 }
+
+
+VALUE 
+initialize_mqueue(int argc, VALUE* argv, VALUE self) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_send(VALUE self, value message) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_receive(VALUE self) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_timedsend(VALUE self, VALUE args) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_timedreceive(VALUE self, VALUE args) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_flush(VALUE self) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_size(VALUE self) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_capacity(VALUE self) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_attach_notification_hook(VALUE self) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_detach_notification_hook(VALUE self) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}
+
+VALUE 
+mqueue_delete(VALUE self) {
+  rb_raise(rb_eNotImpError, "Method not implemented");
+}

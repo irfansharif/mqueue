@@ -65,5 +65,19 @@ mqueue_data_type = {
 
 void Init_mqueue();
 static VALUE alloc_mqueue(VALUE);
+VALUE initialize_mqueue(int argc, VALUE* argv, VALUE self);
 
+VALUE mqueue_send(VALUE self, value message);
+VALUE mqueue_receive(VALUE self);
+VALUE mqueue_timedsend(VALUE self, VALUE args);
+VALUE mqueue_timedreceive(VALUE self, VALUE args);
+VALUE mqueue_flush(VALUE self);
+
+VALUE mqueue_size(VALUE self);
+VALUE mqueue_capacity(VALUE self);
+
+VALUE mqueue_attach_notification_hook(VALUE self);
+VALUE mqueue_detach_notification_hook(VALUE self);
+
+VALUE mqueue_delete(VALUE self);
 #endif
