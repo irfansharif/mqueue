@@ -1,4 +1,4 @@
-#include <mqueue.h>
+#include "mq.h"
 
 VALUE mqueue;
 
@@ -26,7 +26,7 @@ initialize_mqueue(int argc, VALUE* argv, VALUE self) {
 }
 
 VALUE 
-mqueue_send(VALUE self, value message) {
+mqueue_send(VALUE self, VALUE message) {
   rb_raise(rb_eNotImpError, "Method not implemented");
 }
 

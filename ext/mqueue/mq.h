@@ -45,7 +45,7 @@ free_mqueue (void* ptr) {
 
 }
 
-size_t void
+size_t
 size_mqueue (const void* ptr) {
 
 }
@@ -67,7 +67,7 @@ void Init_mqueue();
 static VALUE alloc_mqueue(VALUE);
 VALUE initialize_mqueue(int argc, VALUE* argv, VALUE self);
 
-VALUE mqueue_send(VALUE self, value message);
+VALUE mqueue_send(VALUE self, VALUE message);
 VALUE mqueue_receive(VALUE self);
 VALUE mqueue_timedsend(VALUE self, VALUE args);
 VALUE mqueue_timedreceive(VALUE self, VALUE args);
