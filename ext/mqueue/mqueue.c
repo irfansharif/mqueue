@@ -6,6 +6,19 @@ void
 Init_mqueue() {
   mqueue = rb_define_class("MQueue", rb_cObject);
   rb_define_alloc_func(mqueue, alloc_mqueue);
+
+  rb_define_method(mqueue, "initialize", mqueue_initialize, -1);
+  rb_define_method(mqueue, "send", mqueue_send, -1);
+  rb_define_method(mqueue, "receive", mqueue_receive, -1);
+  rb_define_method(mqueue, "timedsend", mqueue_timedsend, -1);
+  rb_define_method(mqueue, "timedreceive", mqueue_timedreceive, -1);
+  rb_define_method(mqueue, "flush", mqueue_flush, -1);
+  rb_define_method(mqueue, "size", mqueue_size, -1);
+  rb_define_method(mqueue, "capacity", mqueue_capacity, -1);
+  rb_define_method(mqueue, "on_notification", mqueue_attach_notification, -1);
+  rb_define_method(mqueue, "detach_notification", mqueue_detach_notification, -1);
+  rb_define_method(mqueue, "delete", mqueue_delete, -1);
+
 }
 
 static VALUE 
@@ -21,7 +34,7 @@ alloc_mqueue(VALUE klass) {
 
 
 VALUE 
-initialize_mqueue(int argc, VALUE* argv, VALUE self) {
+mqueue_initialize(int argc, VALUE* argv, VALUE self) {
   rb_raise(rb_eNotImpError, "Method not implemented");
 }
 
@@ -61,12 +74,12 @@ mqueue_capacity(VALUE self) {
 }
 
 VALUE 
-mqueue_attach_notification_hook(VALUE self) {
+mqueue_attach_notification(VALUE self) {
   rb_raise(rb_eNotImpError, "Method not implemented");
 }
 
 VALUE 
-mqueue_detach_notification_hook(VALUE self) {
+mqueue_detach_notification(VALUE self) {
   rb_raise(rb_eNotImpError, "Method not implemented");
 }
 
