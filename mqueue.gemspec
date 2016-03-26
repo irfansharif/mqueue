@@ -9,9 +9,10 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Irfan Sharif"]
   spec.email         = ["irfanmahmoudsharif@gmail.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{Ruby wrapper around POSIX IPC message queue}
+  spec.description   = %q{Lightweight wrapper built around POSIX message queues.
+                          Reference used was The Linux Programming Interface.}
+  spec.homepage      = "https://github.com/irfansharif/mqueue"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
