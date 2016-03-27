@@ -42,12 +42,17 @@ typedef struct {
 
 static void
 free_mqueue (void* ptr) {
+  mqueue_t* queue_ptr = ptr;
+  mq_close((*queue_ptr).queue_descriptor);
 
+  free((*queue_ptr).queue_name);
+  free(queue_ptr);
 }
 
 size_t
 size_mqueue (const void* ptr) {
-
+  mqueue_t* queue_ptr = queue_ptr;
+  return sizeof(mqueue_t) + sizeof(char) * strlen((*queue_ptr).queue_name);
 }
 
 static const rb_data_type_t

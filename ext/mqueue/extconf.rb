@@ -1,4 +1,6 @@
 # Extension configuration
 require 'mkmf'
 
-create_makefile 'mqueue/mqueue'
+extension_name = 'mqueue'
+dir_config(extension_name)
+create_makefile(extension_name)
