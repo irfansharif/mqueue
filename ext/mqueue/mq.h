@@ -37,12 +37,10 @@ VALUE mqueue_receive(VALUE);
 VALUE mqueue_timedsend(VALUE, VALUE);
 VALUE mqueue_timedreceive(VALUE, VALUE);
 VALUE mqueue_flush(VALUE);
-
 VALUE mqueue_size(VALUE);
 VALUE mqueue_capacity(VALUE);
-
 VALUE mqueue_attach_notification(VALUE);
 VALUE mqueue_detach_notification(VALUE);
-
 VALUE mqueue_delete(VALUE);
+
 #endif

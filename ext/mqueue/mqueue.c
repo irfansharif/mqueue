@@ -18,6 +18,8 @@ Init_mqueue() {
   rb_define_method(mqueue, "on_notification", mqueue_attach_notification, -1);
   rb_define_method(mqueue, "detach_notification", mqueue_detach_notification, -1);
   rb_define_method(mqueue, "delete", mqueue_delete, 0);
+
+  rb_define_method(mqueue, "capacity", mqueue_capacity, 0);
 }
 
 static VALUE
@@ -51,12 +53,13 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
         ID2SYM(rb_intern("capacity")),
         INT2NUM(10))
       );
+
   (*queue_ptr).attributes.mq_msgsize = FIX2INT(rb_hash_lookup2(options,
         ID2SYM(rb_intern("max_msgsize")),
         INT2NUM(8192))
       );
   (*queue_ptr).queue_descriptor = mq_open((*queue_ptr).queue_name,
-        O_CREAT | O_RDWR,
+        O_CREAT | O_RDWR | O_EXCL,
         S_IRUSR | S_IWUSR,
         &(*queue_ptr).attributes
       );
@@ -70,11 +73,10 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
 VALUE
 mqueue_delete(VALUE self) {
   mqueue_t* queue_ptr;
-
   TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
 
   if (mq_unlink((*queue_ptr).queue_name) == -1)
-    rb_sys_fail("Failed to unlink message queue");
+    return Qfalse;
 
   return Qtrue;
 }
@@ -111,7 +113,10 @@ mqueue_size(VALUE self) {
 
 VALUE
 mqueue_capacity(VALUE self) {
-  rb_raise(rb_eNotImpError, "capacity method not implemented");
+  mqueue_t* queue_ptr;
+  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
+
+  return INT2NUM((*queue_ptr).attributes.mq_maxmsg);
 }
 
 VALUE

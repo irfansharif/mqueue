@@ -5,7 +5,7 @@ require 'mqueue/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "mqueue"
-  spec.version       = Mqueue::VERSION
+  spec.version       = MQueue::VERSION
   spec.authors       = ["Irfan Sharif"]
   spec.email         = ["irfanmahmoudsharif@gmail.com"]
 
