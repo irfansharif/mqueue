@@ -15,21 +15,8 @@ typedef struct {
   size_t queue_name_len;
 } mqueue_t;
 
-static void
-free_mqueue (void* ptr) {
-  mqueue_t* queue_ptr = ptr;
-  if (mq_close((*queue_ptr).queue_descriptor) == -1)
-    rb_sys_fail("mq_close failed");
-
-  free((*queue_ptr).queue_name);
-  free(ptr);
-}
-
-size_t
-size_mqueue (const void* ptr) {
-  mqueue_t* queue_ptr = queue_ptr;
-  return sizeof(mqueue_t) + sizeof(char) * (*queue_ptr).queue_name_len;
-}
+static void free_mqueue(void*);
+size_t size_mqueue(const void*);
 
 static const rb_data_type_t
 mqueue_data_type = {
@@ -37,27 +24,25 @@ mqueue_data_type = {
   {
     0,
     free_mqueue,
-    size_mqueue,
-    0
-  },
-  0, 0, 0
+    size_mqueue
+  }
 };
 
 void Init_mqueue();
 static VALUE alloc_mqueue(VALUE);
-VALUE  mqueue_initialize(int argc, VALUE* argv, VALUE self);
+VALUE  mqueue_initialize(int, VALUE*, VALUE);
 
-VALUE mqueue_send(VALUE self, VALUE message);
-VALUE mqueue_receive(VALUE self);
-VALUE mqueue_timedsend(VALUE self, VALUE args);
-VALUE mqueue_timedreceive(VALUE self, VALUE args);
-VALUE mqueue_flush(VALUE self);
+VALUE mqueue_send(VALUE, VALUE);
+VALUE mqueue_receive(VALUE);
+VALUE mqueue_timedsend(VALUE, VALUE);
+VALUE mqueue_timedreceive(VALUE, VALUE);
+VALUE mqueue_flush(VALUE);
 
-VALUE mqueue_size(VALUE self);
-VALUE mqueue_capacity(VALUE self);
+VALUE mqueue_size(VALUE);
+VALUE mqueue_capacity(VALUE);
 
-VALUE mqueue_attach_notification(VALUE self);
-VALUE mqueue_detach_notification(VALUE self);
+VALUE mqueue_attach_notification(VALUE);
+VALUE mqueue_detach_notification(VALUE);
 
-VALUE mqueue_delete(VALUE self);
+VALUE mqueue_delete(VALUE);
 #endif

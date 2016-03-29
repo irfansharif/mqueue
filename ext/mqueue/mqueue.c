@@ -18,7 +18,6 @@ Init_mqueue() {
   rb_define_method(mqueue, "on_notification", mqueue_attach_notification, -1);
   rb_define_method(mqueue, "detach_notification", mqueue_detach_notification, -1);
   rb_define_method(mqueue, "delete", mqueue_delete, 0);
-
 }
 
 static VALUE
@@ -28,7 +27,7 @@ alloc_mqueue(VALUE klass) {
 
   (*queue_ptr).queue_descriptor = -1;
   (*queue_ptr).queue_name = NULL;
-//  (*queue_ptr).attributes = NULL;
+  (*queue_ptr).attributes.mq_curmsgs = 0;
 
   return object;
 }
@@ -36,27 +35,36 @@ alloc_mqueue(VALUE klass) {
 
 VALUE
 mqueue_initialize(int argc, VALUE* argv, VALUE self) {
-  VALUE queue_name, queue_capacity, queue_max_msgsize, queue_flag;
+  VALUE queue_name, options;
   mqueue_t* queue_ptr;
 
-  rb_scan_args(argc, argv, "13", &queue_name, &queue_capacity, &queue_max_msgsize, &queue_flag);
+  rb_scan_args(argc, argv, "1:", &queue_name, &options);
   TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
 
   if (TYPE(queue_name) != T_STRING)
     rb_raise(rb_eTypeError, "Invalid queue name, must be a string");
-  else {
-    (*queue_ptr).queue_name = ruby_strdup(StringValueCStr(queue_name));
-    (*queue_ptr).queue_name_len = RSTRING_LEN(queue_name);
+  if (TYPE(options) != T_HASH)
+    options = rb_hash_new();
 
-    if (FIXNUM_P(queue_capacity))
-      (*queue_ptr).attributes.mq_maxmsg = FIX2INT(queue_capacity);
-    if (FIXNUM_P(queue_max_msgsize))
-      (*queue_ptr).attributes.mq_msgsize = FIX2INT(queue_max_msgsize);
+  (*queue_ptr).queue_name = ruby_strdup(StringValueCStr(queue_name));
+  (*queue_ptr).attributes.mq_maxmsg = FIX2INT(rb_hash_lookup2(options,
+        ID2SYM(rb_intern("capacity")),
+        INT2NUM(10))
+      );
+  (*queue_ptr).attributes.mq_msgsize = FIX2INT(rb_hash_lookup2(options,
+        ID2SYM(rb_intern("max_msgsize")),
+        INT2NUM(8192))
+      );
+  (*queue_ptr).queue_descriptor = mq_open((*queue_ptr).queue_name,
+        O_CREAT | O_RDWR,
+        S_IRUSR | S_IWUSR,
+        &(*queue_ptr).attributes
+      );
 
-    (*queue_ptr).queue_descriptor = mq_open((*queue_ptr).queue_name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR, NULL);
-    if ((*queue_ptr).queue_descriptor == (mqd_t) -1)
-       rb_sys_fail("mq_open failed");
-  }
+  if ((*queue_ptr).queue_descriptor == (mqd_t) -1)
+    rb_sys_fail("Failed to create queue");
+
+  return self;
 }
 
 VALUE
@@ -114,4 +122,22 @@ mqueue_attach_notification(VALUE self) {
 VALUE
 mqueue_detach_notification(VALUE self) {
   rb_raise(rb_eNotImpError, "detach_notification method not implemented");
+}
+
+/******************************************************************************/
+
+static void
+free_mqueue (void* ptr) {
+  mqueue_t* queue_ptr = ptr;
+  if (mq_close((*queue_ptr).queue_descriptor) == -1)
+    rb_sys_fail("mq_close failed");
+
+  free((*queue_ptr).queue_name);
+  free(ptr);
+}
+
+size_t
+size_mqueue (const void* ptr) {
+  mqueue_t* queue_ptr = queue_ptr;
+  return sizeof(mqueue_t) + sizeof(char) * strlen((*queue_ptr).queue_name);
 }

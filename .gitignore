@@ -7,5 +7,8 @@
 /pkg/
 /spec/reports/
 /tmp/
-/Makefile/
-/mqueue.so/
+Makefile
+mqueue.so
+mqueue.o
+mkmf.log
+mqueue.bundle
