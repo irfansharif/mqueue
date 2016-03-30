@@ -12,7 +12,6 @@ typedef struct {
   mqd_t queue_descriptor;
   struct mq_attr attributes;
   char* queue_name;
-  size_t queue_name_len;
 } mqueue_t;
 
 static void free_mqueue(void*);

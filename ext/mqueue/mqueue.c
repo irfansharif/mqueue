@@ -8,8 +8,8 @@ Init_mqueue() {
   rb_define_alloc_func(mqueue, alloc_mqueue);
 
   rb_define_method(mqueue, "initialize", mqueue_initialize, -1);
-  rb_define_method(mqueue, "send", mqueue_send, -1);
-  rb_define_method(mqueue, "receive", mqueue_receive, -1);
+  rb_define_method(mqueue, "send", mqueue_send, 1);
+  rb_define_method(mqueue, "receive", mqueue_receive, 0);
   rb_define_method(mqueue, "timedsend", mqueue_timedsend, -1);
   rb_define_method(mqueue, "timedreceive", mqueue_timedreceive, -1);
   rb_define_method(mqueue, "flush", mqueue_flush, -1);
@@ -80,12 +80,31 @@ mqueue_delete(VALUE self) {
 
 VALUE
 mqueue_send(VALUE self, VALUE message) {
-  rb_raise(rb_eNotImpError, "send method not implemented");
+  mqueue_t* queue_ptr;
+  char* msg_ptr;
+  size_t msg_len;
+
+  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
+
+  msg_ptr = RSTRING_PTR(message);
+  msg_len = RSTRING_LEN(message);
+
+  if (mq_send((*queue_ptr).queue_descriptor, msg_ptr, msg_len, 0) == -1)
+    return Qfalse;
+  return Qtrue;
 }
 
 VALUE
 mqueue_receive(VALUE self) {
-  rb_raise(rb_eNotImpError, "receive method not implemented");
+  mqueue_t* queue_ptr;
+
+  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
+  char msg_buffer[(*queue_ptr).attributes.mq_msgsize];
+
+  if (mq_receive((*queue_ptr).queue_descriptor, msg_buffer, (*queue_ptr).attributes.mq_msgsize, 0) == -1)
+    return Qfalse;
+
+  return rb_str_new_cstr(msg_buffer);
 }
 
 VALUE
