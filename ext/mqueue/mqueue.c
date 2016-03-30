@@ -13,13 +13,11 @@ Init_mqueue() {
   rb_define_method(mqueue, "timedsend", mqueue_timedsend, -1);
   rb_define_method(mqueue, "timedreceive", mqueue_timedreceive, -1);
   rb_define_method(mqueue, "flush", mqueue_flush, -1);
-  rb_define_method(mqueue, "size", mqueue_size, -1);
-  rb_define_method(mqueue, "capacity", mqueue_capacity, -1);
+  rb_define_method(mqueue, "size", mqueue_size, 0);
+  rb_define_method(mqueue, "capacity", mqueue_capacity, 0);
   rb_define_method(mqueue, "on_notification", mqueue_attach_notification, -1);
   rb_define_method(mqueue, "detach_notification", mqueue_detach_notification, -1);
   rb_define_method(mqueue, "delete", mqueue_delete, 0);
-
-  rb_define_method(mqueue, "capacity", mqueue_capacity, 0);
 }
 
 static VALUE
@@ -53,7 +51,6 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
         ID2SYM(rb_intern("capacity")),
         INT2NUM(10))
       );
-
   (*queue_ptr).attributes.mq_msgsize = FIX2INT(rb_hash_lookup2(options,
         ID2SYM(rb_intern("max_msgsize")),
         INT2NUM(8192))
@@ -65,7 +62,7 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
       );
 
   if ((*queue_ptr).queue_descriptor == (mqd_t) -1)
-    rb_sys_fail("Failed to create queue");
+    return Qnil;
 
   return self;
 }
@@ -108,15 +105,28 @@ mqueue_flush(VALUE self) {
 
 VALUE
 mqueue_size(VALUE self) {
-  rb_raise(rb_eNotImpError, "size method not implemented");
+  mqueue_t* queue_ptr;
+  struct mq_attr attributes;
+
+  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
+
+  if (mq_getattr((*queue_ptr).queue_descriptor, &attributes) == -1)
+    return INT2NUM(-1);
+
+  return INT2NUM(attributes.mq_curmsgs);
 }
 
 VALUE
 mqueue_capacity(VALUE self) {
   mqueue_t* queue_ptr;
+  struct mq_attr attributes;
+
   TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
 
-  return INT2NUM((*queue_ptr).attributes.mq_maxmsg);
+  if (mq_getattr((*queue_ptr).queue_descriptor, &attributes) == -1)
+    return INT2NUM(-1);
+
+  return INT2NUM(attributes.mq_maxmsg);
 }
 
 VALUE
