@@ -40,6 +40,9 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
   rb_scan_args(argc, argv, "1:", &queue_name, &options);
   TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
 
+  if ((*queue_ptr).queue_descriptor != -1)
+    rb_raise(rb_eRuntimeError, "Reinitialized in same process");
+
   if (TYPE(queue_name) != T_STRING)
     rb_raise(rb_eTypeError, "Invalid queue name, must be a string");
   if (TYPE(options) != T_HASH)
@@ -55,12 +58,12 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
         INT2NUM(8192))
       );
   (*queue_ptr).queue_descriptor = mq_open((*queue_ptr).queue_name,
-        O_CREAT | O_RDWR | O_EXCL,
+        O_CREAT | O_RDWR,
         S_IRUSR | S_IWUSR,
         &(*queue_ptr).attributes
       );
 
-  if ((*queue_ptr).queue_descriptor == (mqd_t) -1)
+  if ((*queue_ptr).queue_descriptor == (mqd_t)-1)
     return Qnil;
 
   return self;
