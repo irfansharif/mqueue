@@ -6,6 +6,7 @@
 #include <sys/stat.h>   /* Defines mode constants */
 #include <mqueue.h>
 #include <unistd.h>
+#include <time.h>
 
 extern VALUE mqueue;
 typedef struct {
@@ -33,9 +34,8 @@ VALUE  mqueue_initialize(int, VALUE*, VALUE);
 
 VALUE mqueue_send(VALUE, VALUE);
 VALUE mqueue_receive(VALUE);
-VALUE mqueue_timedsend(VALUE, VALUE);
-VALUE mqueue_timedreceive(VALUE, VALUE);
-VALUE mqueue_flush(VALUE);
+VALUE mqueue_timedsend(int, VALUE*, VALUE);
+VALUE mqueue_timedreceive(int, VALUE*, VALUE);
 VALUE mqueue_size(VALUE);
 VALUE mqueue_capacity(VALUE);
 VALUE mqueue_attach_notification(VALUE);

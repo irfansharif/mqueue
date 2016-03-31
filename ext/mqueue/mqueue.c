@@ -12,7 +12,6 @@ Init_mqueue() {
   rb_define_method(mqueue, "receive", mqueue_receive, 0);
   rb_define_method(mqueue, "timedsend", mqueue_timedsend, -1);
   rb_define_method(mqueue, "timedreceive", mqueue_timedreceive, -1);
-  rb_define_method(mqueue, "flush", mqueue_flush, -1);
   rb_define_method(mqueue, "size", mqueue_size, 0);
   rb_define_method(mqueue, "capacity", mqueue_capacity, 0);
   rb_define_method(mqueue, "on_notification", mqueue_attach_notification, -1);
@@ -108,18 +107,55 @@ mqueue_receive(VALUE self) {
 }
 
 VALUE
-mqueue_timedsend(VALUE self, VALUE args) {
-  rb_raise(rb_eNotImpError, "timedsend method not implemented");
+mqueue_timedsend(int argc, VALUE* argv, VALUE self) {
+  VALUE message, timeout;
+  mqueue_t* queue_ptr;
+  char* msg_ptr;
+  size_t msg_len;
+  struct timespec abs_timeout;
+
+  rb_scan_args(argc, argv, "11", &message, &timeout);
+
+  if (NIL_P(timeout))
+    timeout = INT2NUM(10);
+
+  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
+
+  msg_ptr = RSTRING_PTR(message);
+  msg_len = RSTRING_LEN(message);
+
+  if (clock_gettime(CLOCK_REALTIME, &abs_timeout) == -1)
+    return Qfalse;
+
+  abs_timeout.tv_sec += NUM2INT(timeout);
+
+  if (mq_timedsend((*queue_ptr).queue_descriptor, msg_ptr, msg_len, 0, &abs_timeout) == -1)
+    return Qfalse;
+  return Qtrue;
 }
 
 VALUE
-mqueue_timedreceive(VALUE self, VALUE args) {
-  rb_raise(rb_eNotImpError, "timedreceive method not implemented");
-}
+mqueue_timedreceive(int argc, VALUE* argv, VALUE self) {
+  VALUE timeout;
+  mqueue_t* queue_ptr;
+  struct timespec abs_timeout;
 
-VALUE
-mqueue_flush(VALUE self) {
-  rb_raise(rb_eNotImpError, "flush method not implemented");
+  rb_scan_args(argc, argv, "01", &timeout);
+
+  if (NIL_P(timeout))
+    timeout = INT2NUM(10);
+
+  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
+  char msg_buffer[(*queue_ptr).attributes.mq_msgsize];
+
+  if (clock_gettime(CLOCK_REALTIME, &abs_timeout) == -1)
+    return Qfalse;
+
+  abs_timeout.tv_sec += NUM2INT(timeout);
+  if (mq_timedreceive((*queue_ptr).queue_descriptor, msg_buffer, (*queue_ptr).attributes.mq_msgsize, 0, &abs_timeout) == -1)
+    return Qfalse;
+
+  return rb_str_new_cstr(msg_buffer);
 }
 
 VALUE
