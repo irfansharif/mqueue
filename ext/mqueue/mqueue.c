@@ -27,6 +27,7 @@ alloc_mqueue(VALUE klass) {
   (*queue_ptr).queue_descriptor = -1;
   (*queue_ptr).queue_name = NULL;
   (*queue_ptr).attributes.mq_curmsgs = 0;
+  (*queue_ptr).attributes.mq_flags = 0;
 
   return object;
 }
@@ -57,14 +58,35 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
         ID2SYM(rb_intern("max_msgsize")),
         INT2NUM(8192))
       );
+
+  VALUE flags = rb_hash_lookup(options, ID2SYM(rb_intern("flags")));
+  int num_flags = RARRAY_LEN(flags);
+  VALUE cur_flag;
+
+  for(int i = 0; i < num_flags; i++) {
+    cur_flag = rb_ary_entry(flags, i);
+    if (cur_flag == ID2SYM(rb_intern("creat"))) {
+      (*queue_ptr).attributes.mq_flags |= O_CREAT;
+    } else if (cur_flag ==  ID2SYM(rb_intern("excl")))
+      (*queue_ptr).attributes.mq_flags |= O_EXCL;
+    else if (cur_flag == ID2SYM(rb_intern("rdonly"))) {
+      (*queue_ptr).attributes.mq_flags |= O_RDONLY;
+    } else if (cur_flag == ID2SYM(rb_intern("wronly")))
+      (*queue_ptr).attributes.mq_flags |= O_WRONLY;
+    else if (cur_flag == ID2SYM(rb_intern("rdwr")))
+      (*queue_ptr).attributes.mq_flags |= O_RDWR;
+    else if (cur_flag == ID2SYM(rb_intern("nonblock")))
+      (*queue_ptr).attributes.mq_flags |= O_NONBLOCK;
+  }
+
   (*queue_ptr).queue_descriptor = mq_open((*queue_ptr).queue_name,
-        O_CREAT | O_RDWR,
+        (*queue_ptr).attributes.mq_flags,
         S_IRUSR | S_IWUSR,
         &(*queue_ptr).attributes
       );
 
   if ((*queue_ptr).queue_descriptor == (mqd_t)-1)
-    return Qnil;
+    rb_raise(rb_eRuntimeError, "Unable to initialize");
 
   return self;
 }
