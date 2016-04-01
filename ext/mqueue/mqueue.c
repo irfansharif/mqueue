@@ -32,7 +32,6 @@ alloc_mqueue(VALUE klass) {
   return object;
 }
 
-
 VALUE
 mqueue_initialize(int argc, VALUE* argv, VALUE self) {
   VALUE queue_name, options;
@@ -42,7 +41,7 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
   TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
 
   if ((*queue_ptr).queue_descriptor != -1)
-    rb_raise(rb_eRuntimeError, "Reinitialized in same process");
+    rb_raise(rb_eRuntimeError, "Illegal initialization");
 
   if (TYPE(queue_name) != T_STRING)
     rb_raise(rb_eTypeError, "Invalid queue name, must be a string");
@@ -58,27 +57,7 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
         ID2SYM(rb_intern("max_msgsize")),
         INT2NUM(8192))
       );
-
-  VALUE flags = rb_hash_lookup(options, ID2SYM(rb_intern("flags")));
-  int num_flags = RARRAY_LEN(flags);
-  VALUE cur_flag;
-
-  for(int i = 0; i < num_flags; i++) {
-    cur_flag = rb_ary_entry(flags, i);
-    if (cur_flag == ID2SYM(rb_intern("creat"))) {
-      (*queue_ptr).attributes.mq_flags |= O_CREAT;
-    } else if (cur_flag ==  ID2SYM(rb_intern("excl")))
-      (*queue_ptr).attributes.mq_flags |= O_EXCL;
-    else if (cur_flag == ID2SYM(rb_intern("rdonly"))) {
-      (*queue_ptr).attributes.mq_flags |= O_RDONLY;
-    } else if (cur_flag == ID2SYM(rb_intern("wronly")))
-      (*queue_ptr).attributes.mq_flags |= O_WRONLY;
-    else if (cur_flag == ID2SYM(rb_intern("rdwr")))
-      (*queue_ptr).attributes.mq_flags |= O_RDWR;
-    else if (cur_flag == ID2SYM(rb_intern("nonblock")))
-      (*queue_ptr).attributes.mq_flags |= O_NONBLOCK;
-  }
-
+  (*queue_ptr).attributes.mq_flags = generate_flags(options);
   (*queue_ptr).queue_descriptor = mq_open((*queue_ptr).queue_name,
         (*queue_ptr).attributes.mq_flags,
         S_IRUSR | S_IWUSR,
@@ -235,4 +214,31 @@ size_t
 size_mqueue (const void* ptr) {
   mqueue_t* queue_ptr = queue_ptr;
   return sizeof(mqueue_t) + sizeof(char) * strlen((*queue_ptr).queue_name);
+}
+
+long
+generate_flags(VALUE options) {
+  VALUE flags = rb_hash_lookup(options, ID2SYM(rb_intern("flags"))), cur_flag;
+  if (flags == Qnil || RARRAY_LEN(flags) == 0)
+    return 0;
+  int num_flags = RARRAY_LEN(flags);
+  long mq_flags = 0;
+
+  for(int i = 0; i < num_flags; i++) {
+    cur_flag = rb_ary_entry(flags, i);
+    if (cur_flag == ID2SYM(rb_intern("creat")))
+      mq_flags |= O_CREAT;
+    else if (cur_flag ==  ID2SYM(rb_intern("excl")))
+      mq_flags |= O_EXCL;
+    else if (cur_flag == ID2SYM(rb_intern("rdonly")))
+      mq_flags |= O_RDONLY;
+    else if (cur_flag == ID2SYM(rb_intern("wronly")))
+      mq_flags |= O_WRONLY;
+    else if (cur_flag == ID2SYM(rb_intern("rdwr")))
+      mq_flags |= O_RDWR;
+    else if (cur_flag == ID2SYM(rb_intern("nonblock")))
+      mq_flags |= O_NONBLOCK;
+  }
+
+  return mq_flags;
 }

@@ -17,6 +17,7 @@ typedef struct {
 
 static void free_mqueue(void*);
 size_t size_mqueue(const void*);
+long generate_flags(VALUE);
 
 static const rb_data_type_t
 mqueue_data_type = {

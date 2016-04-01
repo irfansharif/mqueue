@@ -6,7 +6,13 @@ require "mqueue/mqueue"
 # You can add fixtures and/or initialization code here to make experimenting
 # with your gem easier. You can also use a different console, if you like.
 
-mq = MQueue.new "/string", flags: [:creat, :rdwr]
+def clear
+  system 'clear'
+end
+
+mq = MQueue.new "/queue_name", flags: [:creat, :rdwr]
 
 require "pry"
 Pry.start
+
+mq.delete
