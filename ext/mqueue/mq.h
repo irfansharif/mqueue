@@ -7,8 +7,8 @@
 #include <mqueue.h>
 #include <unistd.h>
 #include <time.h>
+#include <pthread.h>
 
-extern VALUE mqueue;
 typedef struct {
   mqd_t queue_descriptor;
   struct mq_attr attributes;
@@ -18,6 +18,7 @@ typedef struct {
 static void free_mqueue(void*);
 size_t size_mqueue(const void*);
 long generate_flags(VALUE);
+static void notification_function(union sigval);
 
 static const rb_data_type_t
 mqueue_data_type = {
@@ -39,7 +40,7 @@ VALUE mqueue_timedsend(int, VALUE*, VALUE);
 VALUE mqueue_timedreceive(int, VALUE*, VALUE);
 VALUE mqueue_size(VALUE);
 VALUE mqueue_capacity(VALUE);
-VALUE mqueue_attach_notification(VALUE);
+VALUE mqueue_attach_notification(VALUE, VALUE);
 VALUE mqueue_detach_notification(VALUE);
 VALUE mqueue_delete(VALUE);
 

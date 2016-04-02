@@ -11,6 +11,9 @@ def clear
 end
 
 mq = MQueue.new "/queue_name", flags: [:creat, :rdwr]
+cb = Proc.new {
+  puts "Inside Proc"
+}
 
 require "pry"
 Pry.start
