@@ -54,50 +54,46 @@ mq.recieve
   mq.send "42"
 end
 
-queue.size
+mq.size
 # => 10
 
 # Timed send takes an optional parameter indicating duration it would wait
-# (in seconds) before throwing a MQueue::QueueFull error, defaults to 0
-assert_raises MQueue::QueueFull do
-  mq.timedsend "queue full, this will fail", 0
-end
+# (in seconds) before returning false, defaults to 0
+refute mq.timedsend "queue full, this will fail", 0
 
-queue.full?
+mq.full?
 # => true
 
 # This would block indefinitely until something is removed from the queue
-# queue.send "the answer to life"
+# mq.send "the answer to life"
 
 # Empties queue of all messages, includes pending messages
-queue.flush
+mq.flush
 
 # Timed receive takes an optional parameter indicating duration it would wait
-# (in seconds) before throwing a MQueue::QueueEmpty error, defaults to 0
-assert_raises MQueue::QueueEmpty do
-  queue.timedreceive "queue empty, this will fail too", 0
-end
+# (in seconds) before returning false, defaults to 0
+refute mq.timedreceive "queue empty, this will fail too", 0
 
-queue.empty?
+mq.empty?
 # => true
 
 # Notification as defined here is when a message is added to previously empty
 # queue, will not get triggered if someone else is waiting on `receive` or
 # messages added to non-empty queues. is triggered asynchronously, only one
-# process will be able to add the notification hook to a particular queue
-queue.on_notification do |msg|
+# process will be able to add the notification hook to a particular queue (NOT IMPLEMENTED)
+mq.on_notification do |msg|
   puts "#{msg} delivered through notification hook"
 end
 
-queue.send "notification"
+mq.send "notification"
 # => "notification delivered through notification hook"
 
-# Hook no longer triggered
-queue.disable_notification
-queue.send "ignored notification"
+# Hook no longer triggered (NOT IMPLEMENTED)
+mq.disable_notification
+mq.send "ignored notification"
 
 # Deletes the queue and any containing messages, if not done so it persists until system reboot
-queue.delete
+mq.delete
 ```
 
 ## Development
