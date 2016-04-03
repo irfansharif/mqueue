@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 
 require "bundler/setup"
-require "mqueue/mqueue"
+require "mqueue"
+require "pry"
 
 # You can add fixtures and/or initialization code here to make experimenting
 # with your gem easier. You can also use a different console, if you like.
@@ -11,11 +12,7 @@ def clear
 end
 
 mq = MQueue.new "/queue_name", flags: [:creat, :rdwr]
-cb = Proc.new {
-  puts "Inside Proc"
-}
 
-require "pry"
 Pry.start
 
 mq.delete

@@ -12,8 +12,8 @@ Init_mqueue() {
   rb_define_method(mqueue, "timedreceive", mqueue_timedreceive, -1);
   rb_define_method(mqueue, "size", mqueue_size, 0);
   rb_define_method(mqueue, "capacity", mqueue_capacity, 0);
-  rb_define_method(mqueue, "on_notification", mqueue_attach_notification, 1);
-  rb_define_method(mqueue, "detach_notification", mqueue_detach_notification, 0);
+  /* rb_define_method(mqueue, "on_notification", mqueue_attach_notification, 1); */
+  /* rb_define_method(mqueue, "detach_notification", mqueue_detach_notification, 0); */
   rb_define_method(mqueue, "delete", mqueue_delete, 0);
 }
 
@@ -204,14 +204,21 @@ mqueue_attach_notification(VALUE self, VALUE callback) {
   sev.sigev_value.sival_ptr = (void *)callback_args;
 
   if (mq_notify((*queue_ptr).queue_descriptor, &sev) == -1)
-    rb_raise(rb_eRuntimeError, "Could not attach notification hook");
+    return Qfalse;
 
   return Qtrue;
 }
 
 VALUE
 mqueue_detach_notification(VALUE self) {
-  rb_raise(rb_eNotImpError, "detach_notification method not implemented");
+  mqueue_t* queue_ptr;
+
+  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
+
+  if (mq_notify((*queue_ptr).queue_descriptor, NULL) == -1)
+    return Qfalse;
+
+  return Qtrue;
 }
 
 /******************************************************************************/
