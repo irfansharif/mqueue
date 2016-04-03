@@ -255,10 +255,10 @@ generate_flags(VALUE options) {
   VALUE flags = rb_hash_lookup(options, ID2SYM(rb_intern("flags"))), cur_flag;
   if (flags == Qnil || RARRAY_LEN(flags) == 0)
     return 0;
-  int num_flags = RARRAY_LEN(flags);
+  int num_flags = RARRAY_LEN(flags), i;
   long mq_flags = 0;
 
-  for(int i = 0; i < num_flags; i++) {
+  for(i = 0; i < num_flags; i++) {
     cur_flag = rb_ary_entry(flags, i);
     if (cur_flag == ID2SYM(rb_intern("creat")))
       mq_flags |= O_CREAT;

@@ -1,4 +1,4 @@
-# GEM: mqueue
+# GEM: mqueue ![](https://travis-ci.org/irfansharif/mqueue.svg?branch=master)
 
 Lightweight wrapper built around [POSIX message queues](http://man7.org/linux/man-pages/man7/mq_overview.7.html). Abstracted functionality when designing a module for Ruby IPC with concurrent processes, reference used was [The Linux Programming Interface](http://man7.org/tlpi/download/TLPI-52-POSIX_Message_Queues.pdf).
 
