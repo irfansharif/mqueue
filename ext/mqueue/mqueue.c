@@ -98,14 +98,15 @@ mqueue_send(VALUE self, VALUE message) {
 VALUE
 mqueue_receive(VALUE self) {
   mqueue_t* queue_ptr;
+  int len;
 
   TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
   char msg_buffer[(*queue_ptr).attributes.mq_msgsize];
 
-  if (mq_receive((*queue_ptr).queue_descriptor, msg_buffer, (*queue_ptr).attributes.mq_msgsize, 0) == -1)
+  if ((len = mq_receive((*queue_ptr).queue_descriptor, msg_buffer, (*queue_ptr).attributes.mq_msgsize, 0)) == -1)
     return Qfalse;
 
-  return rb_str_new_cstr(msg_buffer);
+  return rb_str_new(msg_buffer, len);
 }
 
 VALUE

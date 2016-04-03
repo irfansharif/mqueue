@@ -35,23 +35,23 @@ Or install it yourself as:
 ```ruby
 require 'mqueue'
 
-# Queue names cannot contain '/', shown below are the default settings provided
-# by the Kernel, check below for options available for flags and how to change
-# default settings outside ruby
-queue = MQueue.new("queue_name", capacity: 10, max_msgsize: 8192, flag: :create)
-queue.send "message"
+# Queue names must start with '/', shown below are the default settings
+provided # by the Kernel (except for queue_name), check below for options
+available for flags and how to change # default settings outside ruby
+mq = MQueue.new("/queue_name", capacity: 10, max_msgsize: 8192, flags: [:creat, :rdwr])
+mq.send "message"
 
-queue.receive
+mq.receive
 # => "message"
 
-fork { queue.send "another one" }
+fork { mq.send "another one" }
 
 # Blocks on empty queues, in this case until forked process adds message onto queue
-queue.recieve
+mq.recieve
 # => "another one"
 
 10.times do
-  queue.send "42"
+  mq.send "42"
 end
 
 queue.size
@@ -60,7 +60,7 @@ queue.size
 # Timed send takes an optional parameter indicating duration it would wait
 # (in seconds) before throwing a MQueue::QueueFull error, defaults to 0
 assert_raises MQueue::QueueFull do
-  queue.timedsend "queue full, this will fail", 0
+  mq.timedsend "queue full, this will fail", 0
 end
 
 queue.full?

@@ -14,5 +14,3 @@ end
 mq = MQueue.new "/queue_name", flags: [:creat, :rdwr]
 
 Pry.start
-
-mq.delete

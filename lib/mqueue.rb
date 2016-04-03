@@ -1,9 +1,26 @@
 require "mqueue/mqueue"
 
-class MQueue
+module MQueueExtensions
   def flush
     values = []
-    values << self.timedreceive(0) while self.size > 0
+    values << timedreceive(0) while size > 0
     values
   end
+
+  def full?
+    size == capacity
+  end
+
+  def empty?
+    size == 0
+  end
+
+  def delete
+    flush
+    super
+  end
+end
+
+class MQueue
+  prepend MQueueExtensions
 end
