@@ -96,6 +96,29 @@ mq.send "ignored notification"
 mq.delete
 ```
 
+## Benchmarks
+```ruby
+require 'benchmark'
+# => true
+q = MQueue.new "/name_a", flags: [:creat, :rdwr], capacity: 100
+# => #<MQueue:0x00000002af0620>
+Benchmark.bm(7) do |b|
+  b.report('simultaneous:') { 1000000.times { q.send "msg"; q.receive } }
+end
+
+#                   user     system      total        real
+# simultaneous:  1.460000   0.980000   2.440000  (2.445581)
+
+# => [#<Benchmark::Tms:0x0000000263c228
+#     @cstime=0.0,
+#     @cutime=0.0,
+#     @label="simultaneous:",
+#     @real=2.44558057,
+#     @stime=0.98,
+#     @total=2.44,
+#     @utime=1.46>]
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class MqueueTest < Minitest::Test
+class MQueueTest < Minitest::Test
   def setup
     @queue_name = "/test_queue_name"
     @mq = MQueue.new @queue_name, flags: [:creat, :rdwr]
@@ -48,34 +48,11 @@ class MqueueTest < Minitest::Test
     refute @mq.timedreceive 0
   end
 
-  def test_invalid_queue_name
-    assert_raises RuntimeError do
-      MQueue.new "invalid_name", flags: [:creat, :rdwr]
-    end
-  end
-
   def test_queue_attributes
     @mq.send "hello"
     @mq.send "is it me you're looking for?"
     @mq.send "i can see it in your eyes"
 
     assert_equal @mq.size, 3
-  end
-
-  def test_custom_queue_capacity
-    small_queue = MQueue.new "/small-queue", capacity: 2, flags: [:creat, :rdwr]
-    2.times { small_queue.send "fill queue with messages" }
-
-    refute small_queue.timedsend "overflow", 0
-    small_queue.delete
-  end
-
-  def test_custom_max_msgsize
-    refute @mq.send 'c' * 4097
-
-    wide_queue = MQueue.new "/tight-queue", max_msgsize: 2 ** 13, flags: [:creat, :rdwr]
-    assert_equal 2 ** 13, wide_queue.max_msgsize
-    assert wide_queue.send 'c' * (2 ** 13)
-    wide_queue.delete
   end
 end

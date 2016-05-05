@@ -143,6 +143,7 @@ mqueue_timedreceive(int argc, VALUE* argv, VALUE self) {
   VALUE timeout;
   mqueue_t* queue_ptr;
   struct timespec abs_timeout;
+  int len;
 
   rb_scan_args(argc, argv, "01", &timeout);
 
@@ -156,10 +157,10 @@ mqueue_timedreceive(int argc, VALUE* argv, VALUE self) {
     return Qfalse;
 
   abs_timeout.tv_sec += NUM2INT(timeout);
-  if (mq_timedreceive((*queue_ptr).queue_descriptor, msg_buffer, (*queue_ptr).attributes.mq_msgsize, 0, &abs_timeout) == -1)
+  if ((len = mq_timedreceive((*queue_ptr).queue_descriptor, msg_buffer, (*queue_ptr).attributes.mq_msgsize, 0, &abs_timeout)) == -1)
     return Qfalse;
 
-  return rb_str_new_cstr(msg_buffer);
+  return rb_str_new(msg_buffer, len);
 }
 
 VALUE
