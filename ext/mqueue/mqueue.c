@@ -13,8 +13,6 @@ Init_mqueue() {
   rb_define_method(mqueue, "size", mqueue_size, 0);
   rb_define_method(mqueue, "capacity", mqueue_capacity, 0);
   rb_define_method(mqueue, "max_msgsize", mqueue_max_msgsize, 0);
-  /* rb_define_method(mqueue, "on_notification", mqueue_attach_notification, 1); */
-  /* rb_define_method(mqueue, "detach_notification", mqueue_detach_notification, 0); */
   rb_define_method(mqueue, "delete", mqueue_delete, 0);
 }
 
@@ -201,52 +199,7 @@ mqueue_max_msgsize(VALUE self) {
   return INT2NUM(attributes.mq_msgsize);
 }
 
-VALUE
-mqueue_attach_notification(VALUE self, VALUE callback) {
-  if(rb_class_of(callback) != rb_cProc)
-    rb_raise(rb_eTypeError, "Expected Proc callback");
-
-  mqueue_t* queue_ptr;
-  struct sigevent sev;
-  VALUE callback_args = rb_ary_new();
-
-  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
-  rb_ary_store(callback_args, 0, callback);
-
-  sev.sigev_notify = SIGEV_THREAD;
-  sev.sigev_notify_function = notification_function;
-  sev.sigev_notify_attributes = NULL;
-  sev.sigev_value.sival_ptr = (void *)callback_args;
-
-  if (mq_notify((*queue_ptr).queue_descriptor, &sev) == -1)
-    return Qfalse;
-
-  return Qtrue;
-}
-
-VALUE
-mqueue_detach_notification(VALUE self) {
-  mqueue_t* queue_ptr;
-
-  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
-
-  if (mq_notify((*queue_ptr).queue_descriptor, NULL) == -1)
-    return Qfalse;
-
-  return Qtrue;
-}
-
 /******************************************************************************/
-
-static void
-notification_function(union sigval sv) {
-  VALUE callback, callback_args;
-
-  callback_args = (VALUE)sv.sival_ptr;
-  callback = rb_ary_entry(callback_args, 0);
-
-  rb_funcall(callback, rb_intern("call"), 0);
-}
 
 static void
 free_mqueue (void* ptr) {
