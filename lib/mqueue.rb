@@ -14,11 +14,6 @@ module MQueueExtensions
   def empty?
     size == 0
   end
-
-  def delete
-    flush
-    super
-  end
 end
 
 class MQueue

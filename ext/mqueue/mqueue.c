@@ -12,6 +12,7 @@ Init_mqueue() {
   rb_define_method(mqueue, "timedreceive", mqueue_timedreceive, -1);
   rb_define_method(mqueue, "size", mqueue_size, 0);
   rb_define_method(mqueue, "capacity", mqueue_capacity, 0);
+  rb_define_method(mqueue, "max_msgsize", mqueue_max_msgsize, 0);
   /* rb_define_method(mqueue, "on_notification", mqueue_attach_notification, 1); */
   /* rb_define_method(mqueue, "detach_notification", mqueue_detach_notification, 0); */
   rb_define_method(mqueue, "delete", mqueue_delete, 0);
@@ -53,7 +54,7 @@ mqueue_initialize(int argc, VALUE* argv, VALUE self) {
       );
   (*queue_ptr).attributes.mq_msgsize = FIX2INT(rb_hash_lookup2(options,
         ID2SYM(rb_intern("max_msgsize")),
-        INT2NUM(8192))
+        INT2NUM(4096))
       );
   (*queue_ptr).attributes.mq_flags = generate_flags(options);
   (*queue_ptr).queue_descriptor = mq_open((*queue_ptr).queue_name,
@@ -185,6 +186,19 @@ mqueue_capacity(VALUE self) {
     return INT2NUM(-1);
 
   return INT2NUM(attributes.mq_maxmsg);
+}
+
+VALUE
+mqueue_max_msgsize(VALUE self) {
+  mqueue_t* queue_ptr;
+  struct mq_attr attributes;
+
+  TypedData_Get_Struct(self, mqueue_t, &mqueue_data_type, queue_ptr);
+
+  if (mq_getattr((*queue_ptr).queue_descriptor, &attributes) == -1)
+    return INT2NUM(-1);
+
+  return INT2NUM(attributes.mq_msgsize);
 }
 
 VALUE

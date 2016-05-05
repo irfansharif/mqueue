@@ -21,22 +21,20 @@ class MqueueTest < Minitest::Test
 
   def test_single_message_transmission
     @mq.send "buongiorno"
-    received = @mq.receive
-    assert_equal received, "buongiorno"
+    assert_equal @mq.receive, "buongiorno"
   end
 
-  # def test_multiple_messages_transmission
-  #   @mq.send "buongiorno"
-  #   @mq.send "mondo"
-  #   assert_equal @mq.receive, "buongiorno"
-  #   assert_equal @mq.receive, "mondo"
-  # end
+  def test_multiple_messages_transmission
+    @mq.send "buongiorno"
+    @mq.send "mondo"
+    assert_equal @mq.receive, "buongiorno"
+    assert_equal @mq.receive, "mondo"
+  end
 
   def test_cross_process_transmission
-    fork do 
+    fork do
       another_queue = MQueue.new(@queue_name, flags: [:creat, :rdwr])
       another_queue.send "namaste"
-      another_queue.delete
     end
     assert_equal @mq.receive, "namaste"
   end
@@ -46,13 +44,15 @@ class MqueueTest < Minitest::Test
     refute @mq.timedsend "over capacity message", 0
   end
 
-  # def test_timedreceive_returns_false_when_empty
-  #   refute @mq.timedreceive, 0
-  # end
+  def test_timedreceive_returns_false_when_empty
+    refute @mq.timedreceive 0
+  end
 
-  # def test_invalid_queue_name
-  #   refute MQueue.new "invalid_name", flags: [:creat, :rdwr]
-  # end
+  def test_invalid_queue_name
+    assert_raises RuntimeError do
+      MQueue.new "invalid_name", flags: [:creat, :rdwr]
+    end
+  end
 
   def test_queue_attributes
     @mq.send "hello"
@@ -70,12 +70,12 @@ class MqueueTest < Minitest::Test
     small_queue.delete
   end
 
-  # def test_custom_max_msgsize
-  #   refute @mq.send 'c' * 4097
+  def test_custom_max_msgsize
+    refute @mq.send 'c' * 4097
 
-  #   wide_queue = MQueue.new "/tight-queue", max_msgsize: 2 ** 13, flags: [:creat, :rdwr]
-  #   assert_equal 2 ** 13, wide_queue.size
-  #   wide_queue.send 'c' * (2 ** 13)
-  #   wide_queue.delete
-  # end
+    wide_queue = MQueue.new "/tight-queue", max_msgsize: 2 ** 13, flags: [:creat, :rdwr]
+    assert_equal 2 ** 13, wide_queue.max_msgsize
+    assert wide_queue.send 'c' * (2 ** 13)
+    wide_queue.delete
+  end
 end
